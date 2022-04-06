@@ -4,6 +4,7 @@ test_2x2_inverse:
 - Author: tom
 - Date: 2022-04-06
 =#
-using InvertMatrix
+using InvertMatrix, Test
 
+@test true
 
