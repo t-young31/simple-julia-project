@@ -1,5 +1,5 @@
 module InvertMatrix
-export invert_matrix
+export invert_matrix, I, fnorm
 
 """
     invert_matrix(m)
@@ -8,20 +8,98 @@ Invert a square matrix
 
 # Examples
 ```julia-repl
-julia> invert_matrix([2., 0; 0, 1])
-0.5, 0;
-0,   1
+julia> invert_matrix([2. 0.; 0. 1.])
+0.5  0;
+0    1
 ```
 """
 function invert_matrix(m::Array{Float64})::Array{Float64}
 
+    check_invertable(m)
+    n_rows, n_cols = size(m)
+
+    m̄ = right_augmented_with_idenitiy_matrix(m)
+
+    for i=1:n_rows
+        for j=1:n_cols
+            if i == j
+                continue
+            end
+
+            tmp = m̄[j, i] / m̄[i, i]
+
+            for k=1:2*n_cols
+                m̄[j, k] -= tmp * m̄[i, k]
+            end
+        end
+    end
+
+
+    for i=1:n_rows
+        tmp = m̄[i, i]
+        for j=1:2*n_cols
+            m̄[i, j] = m̄[i, j] / tmp
+        end
+    end
+
+    m_inv = zeros(Float64, n_rows, n_cols)
+
+    for i=1:n_rows
+        for j=n_cols+1:2*n_cols
+            m_inv[i, j-n_cols] = copy(m̄[i, j])
+        end
+    end
+
+    return m_inv
+end
+
+
+function right_augmented_with_idenitiy_matrix(m::Array{Float64})::Array{Float64}
+
+    if !is_square(m)
+        throw(MethodError("Cannot right augment a non square matrix"))
+    end
+
+    n_rows, n_cols = size(m)
+
+    aug_m = zeros(Float64, n_rows, 2*n_cols)
+
+    for i=1:n_rows
+        aug_m[i, i+n_rows] = 1.0;    # RHS is an identity matrix
+
+        for j=1:n_cols
+            aug_m[i, j] = copy(m[i, j])      # LHS is input matrix
+        end
+    end
+
+    return aug_m
+end
+
+
+function check_invertable(m::Array{Float64})
     if !is_square(m)
         throw(DomainError("Cannot invert a non-square matrix"))
     end
 
-    # aug_m = zeros(Float64, m.)
+    if has_diagnoal_zeros(m)
+        throw(MethodError("Cannot invert a matrix with diagonal zeros"))
+    end
+end
 
-    return m
+
+function has_diagnoal_zeros(m::Array{Float64})
+
+    if (ndims(m) != 2 || size(m, 1) != size(m, 2))
+        return false
+    end
+
+    for i=1:size(m, 1)
+        if m[i, i]  ≈ 0.0
+            return true
+        end
+    end
+
+    return false
 end
 
 
@@ -31,70 +109,28 @@ function is_square(m::Array)
 end
 
 
+function I(n::Integer)::Array{Float64}
+
+    m = zeros(Float64, n, n)
+    for i=1:n
+        m[i, i] = 1.0
+    end
+
+    return m
+end
 
 
-#=
-ensure_square(m.nrows(), m.ncols());
+function fnorm(m::Array{Float64})::Float64
 
-    let (n_rows, n_cols) = (m.nrows(), m.ncols());
+    norm_sq = 0.0   # Square of the Frobenius Norm
 
-    let mut tmp_m = Array2::<f64>::zeros((n_rows, 2 * n_cols));
+    for j in 1:size(m, 2)
+        for i in 1:size(m, 1)
+            norm_sq += m[i, j]^2
+        end
+    end
 
-    /* Initial augmentation on the RHS diagonal
+    return sqrt(norm_sq)
+end
 
-            (0  0  0  0 ..)         (0  0  1  0 ..)
-    tmp_m = (0  0  0  0 ..)   -->   (0  0  0  1 ..)
-            (.  .  .  .   )         (.  .  .  . ..)
-    */
-    for i in 0..n_rows{
-        tmp_m[[i, i+n_rows]] = 1.0;
-    }
-
-    // Set the LHS as the matrix to invert
-    for i in 0..n_rows{
-
-        if is_close(m[[i, i]], 0.0, 1E-8){
-            panic!("Cannot invert a matrix with a zero on the diagonal");
-        }
-
-        for j in 0..n_cols{
-            tmp_m[[i, j]] = m[[i, j]].clone();
-        }// j
-    }// i
-
-    // And apply the Gauss-Jordan method O(n^3)
-    for i in 0..n_rows{
-        for j in 0..n_cols{
-
-            if i == j{
-                continue;
-            }
-
-            let ratio = tmp_m[[j, i]] / tmp_m[[i, i]];
-
-            for k in 0..2*n_cols{
-                tmp_m[[j, k]] -= ratio * tmp_m[[i, k]];
-            }// k
-        }// j
-    }// i
-
-    for i in 0..n_rows{
-        let tmp_m_ii = tmp_m[[i, i]].clone();
-
-        for j in 0..2*n_cols{
-            tmp_m[[i, j]] = tmp_m[[i, j]] / tmp_m_ii;
-        }// j
-    }// i
-
-    // Finally set the elements of the inverse matrix
-    let mut inv = Array2::<f64>::zeros((n_rows, n_cols));
-
-    for i in 0..n_rows{
-        for j in n_cols..2*n_cols{
-            inv[[i, j-n_cols]] = tmp_m[[i, j]];
-        }// j
-    }// i
-
-    inv
-=#
 end # module
