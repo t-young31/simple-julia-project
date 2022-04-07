@@ -3,5 +3,8 @@ uuid = "f0fbf985-78f3-41e0-8153-9e497d582e46"
 authors = ["tom <tom.young.316@gmail.com>"]
 version = "0.1.0"
 
-[deps]
+[extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

@@ -1,4 +1,5 @@
 module InvertMatrix
+export invert_matrix
 
 """
     invert_matrix(m)
