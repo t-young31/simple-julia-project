@@ -57,7 +57,7 @@ end
 function right_augmented_with_idenitiy_matrix(m::Array{Float64})::Array{Float64}
 
     if !is_square(m)
-        throw(MethodError("Cannot right augment a non square matrix"))
+        throw(ErrorException("Cannot right augment a non square matrix"))
     end
 
     n_rows, n_cols = size(m)
@@ -78,11 +78,11 @@ end
 
 function check_invertable(m::Array{Float64})
     if !is_square(m)
-        throw(DomainError("Cannot invert a non-square matrix"))
+        throw(ErrorException("Cannot invert a non-square matrix"))
     end
 
     if has_diagnoal_zeros(m)
-        throw(MethodError("Cannot invert a matrix with diagonal zeros"))
+        throw(ErrorException("Cannot invert a matrix with diagonal zeros"))
     end
 end
 
