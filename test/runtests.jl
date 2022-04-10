@@ -13,11 +13,11 @@ is_close(a, b) = fnorm(a - b) < 1e-4
 
 
 # Ensure tensors with rank != 2 are handled
-@test_throws DomainError invert_matrix([0. 1.])
+@test_throws ErrorException invert_matrix([0. 1.])
 
 # Ensure non-square matricies are handled correctly
-@test_throws DomainError invert_matrix(ones(Float64, 2, 3))
-@test_throws DomainError invert_matrix(ones(Float64, 6, 3))
+@test_throws ErrorException invert_matrix(ones(Float64, 2, 3))
+@test_throws ErrorException invert_matrix(ones(Float64, 6, 3))
 
 # Ensure the Frobenius Norm calculation is working correctly
 @test fnorm(zeros(Float64, 2, 2)) ≈ 0.0
@@ -28,7 +28,7 @@ is_close(a, b) = fnorm(a - b) < 1e-4
                     I(2))
 
 # Cannot invert a matrix with zeros on the diagonal
-@test_throws MethodError invert_matrix(zeros(Float64, 2, 2))
+@test_throws ErrorException invert_matrix(zeros(Float64, 2, 2))
 
 # Simple diagonal matrix inverse is inverse only of the diagonal elements
 @test is_very_close(invert_matrix([2. 0.; 0. 1.]),
